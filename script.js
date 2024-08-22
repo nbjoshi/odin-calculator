@@ -1,83 +1,130 @@
 document.addEventListener("DOMContentLoaded", () => {
-    let outputText = document.querySelector(".outputbar h1");
-    let operatorList = document.querySelectorAll(".operator");
-    let numberList = document.querySelectorAll(".number");
-    let equalsButton = document.querySelector(".equals");
-    let clearButton = document.querySelector(".clear");
-    let numberOne = "";
-    let numberTwo = "";
-    let operator;
-    let isOperatorClicked = false;
-
-    numberList.forEach((button) => {
-        button.addEventListener("click", () => {
-            if (!isOperatorClicked) {
-                numberOne += button.textContent;
-                changeDisplay(numberOne);
-            }
-            else {
-                numberTwo += button.textContent;
-                changeDisplay(numberTwo);
-            }
-        })
-    })
-
-    operatorList.forEach((button) => {
-        button.addEventListener("click", () => {
-            operator = button.textContent;
-            isOperatorClicked = true;
-            changeDisplay(operator);
-        })
-    })
+    const operatorList = document.querySelectorAll(".operator");
+    const numberList = document.querySelectorAll(".number");
+    const clearBtn = document.querySelector(".clear");
+    const negativeBtn = document.querySelector(".negative");
+    const equalsBtn = document.querySelector(".equals");
+    const decimalBtn = document.querySelector(".decimal");
+    const output = document.querySelector(".outputbar h1");
 
     const add = (a, b) => a + b;
     const subtract = (a, b) => a - b;
     const multiply = (a, b) => a * b;
-    const divide = (a, b) => {
-        if (b === 0) { 
-            return "Undefined"};
-        return (a / b);
+    const divide = (a, b) => { if (b == 0) { return "Undefined" } return a / b; }
+    const percent = (a) => a / 100;
+
+    let operator;
+    let numberOne = "";
+    let numberTwo = "";
+    let isOperatorToggled = false;
+
+    const changeDisplay = function(value) {
+        output.textContent = value;
     }
 
-    const changeDisplay = (value) => outputText.textContent = value;
+    const operate = function(one, two, op) {
+        const a = parseFloat(one);
+        const b = parseFloat(two);
+        
+        if (!one) { changeDisplay(0); return; }
+        if (!two) { changeDisplay(a); return; }
 
-    const operate = function(operator, numberOne, numberTwo) {
-        let value;
-        const a = parseInt(numberOne);
-        const b = parseInt(numberTwo);
-
-        if (!a) { return 0}
-        if (!b) { return a}
-
-        switch(operator) {
+        switch(op) {
             case "+":
-                value = add(a, b);
+                result = add(a, b);
                 break;
             case "-":
-                value = subtract(a, b);
+                result = subtract(a, b);
                 break;
             case "x":
-                value = multiply(a, b);
+                result = multiply(a, b);
                 break;
             case "÷":
-                value = divide(a, b);
+                result = divide(a, b);
+                break;
+            case "%":
+                result = percent(a);
                 break;
         }
-        return value;
+        changeDisplay(result);
     }
 
-    equalsButton.addEventListener("click", () => {
-        const result = operate(operator, numberOne, numberTwo);
-        outputText.textContent = result;
+    operatorList.forEach((button) => {
+        button.addEventListener("click", () => {
+            if (!numberOne) {
+                changeDisplay(0);
+            }
+            else {
+                operator = button.textContent;
+                changeDisplay(operator);
+                isOperatorToggled = true;
+            }
+        })
     })
 
-    const clear = () => {
+    numberList.forEach((button) => {
+        button.addEventListener("click", () => {
+            if (isOperatorToggled) {
+                if (!numberTwo) { numberTwo = button.textContent }
+                else { numberTwo += button.textContent };
+                changeDisplay(numberTwo);
+            }
+            if (!isOperatorToggled) {
+                if (!numberOne) { numberOne = button.textContent }
+                else { numberOne += button.textContent };
+                changeDisplay(numberOne);
+            }
+        })
+    })
+
+    equalsBtn.addEventListener("click", () => {
+        operate(numberOne, numberTwo, operator);
+    })
+
+    clearBtn.addEventListener("click", () => {
+        changeDisplay(0);
         numberOne = "";
         numberTwo = "";
-        operator = "";
-        isOperatorClicked = false;
-        outputText.textContent = 0;
-    }
+        operator = null;
+        isOperatorToggled = false;
+        isNegativeToggled = false;
+    })
 
-    clearButton.addEventListener("click", () => clear());
-})
+    negativeBtn.addEventListener("click", () => {
+        const negativeString = "-";
+
+        if (isOperatorToggled) {
+            if (numberTwo[0] == "-") {
+                numberTwo = numberTwo.slice(1);
+            }
+            else {
+                numberTwo = negativeString.concat("", numberTwo);
+            }
+            changeDisplay(numberTwo);
+        }
+        else {
+            if (numberOne[0] == "-") {
+                numberOne = numberOne.slice(1);
+            }
+            else {
+                numberOne = negativeString.concat("", numberOne);
+            }
+            changeDisplay(numberOne);
+        }
+    })
+
+    decimalBtn.addEventListener("click", () => {
+        if (isOperatorToggled) {
+            if (!numberTwo.includes(".")) {
+                numberTwo = numberTwo.concat("", ".");
+            }
+            changeDisplay(numberTwo);
+        }
+        else {
+            if (!numberOne.includes(".")) {
+                numberOne = numberOne.concat("", ".");
+            }
+            changeDisplay(numberOne);
+        }
+    })
+});
